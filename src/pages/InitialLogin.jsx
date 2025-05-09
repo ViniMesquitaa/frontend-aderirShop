@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IMaskInput } from "react-imask";
+import { Link } from "react-router";
 
 const ModernMultiStepForm = () => {
   const [step, setStep] = useState(1);
@@ -14,6 +15,60 @@ const ModernMultiStepForm = () => {
       city: "",
     },
   });
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Validação do formulário
+  const validate = () => {
+    const newErrors = {};
+
+    if (step === 1) {
+      if (!formData.fullName.trim()) {
+        newErrors.fullName = "Nome completo é obrigatório";
+      } else if (formData.fullName.trim().length < 3) {
+        newErrors.fullName = "Nome deve ter pelo menos 3 caracteres";
+      }
+
+      if (!formData.phoneNumber) {
+        newErrors.phoneNumber = "Telefone é obrigatório";
+      } else if (formData.phoneNumber.replace(/\D/g, "").length < 10) {
+        newErrors.phoneNumber = "Telefone inválido";
+      }
+    }
+
+    if (step === 2) {
+      if (!formData.address.cep) {
+        newErrors["address.cep"] = "CEP é obrigatório";
+      } else if (formData.address.cep.replace(/\D/g, "").length !== 8) {
+        newErrors["address.cep"] = "CEP inválido";
+      }
+
+      if (!formData.address.street.trim()) {
+        newErrors["address.street"] = "Rua é obrigatória";
+      }
+
+      if (!formData.address.number) {
+        newErrors["address.number"] = "Número é obrigatório";
+      }
+
+      if (!formData.address.city.trim()) {
+        newErrors["address.city"] = "Bairro é obrigatório";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Efeito para limpar erros quando os campos são alterados
+  useEffect(() => {
+    if (errors.fullName && formData.fullName.trim().length >= 3) {
+      setErrors((prevErrors) => {
+        const { fullName: _, ...rest } = prevErrors;
+        return rest;
+      });
+    }
+  }, [formData.fullName, errors]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,7 +85,9 @@ const ModernMultiStepForm = () => {
   };
 
   const handleNext = () => {
-    setStep((prevStep) => prevStep + 1);
+    if (validate()) {
+      setStep((prevStep) => prevStep + 1);
+    }
   };
 
   const handlePrev = () => {
@@ -39,8 +96,16 @@ const ModernMultiStepForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Dados enviados: ", formData);
+    setIsSubmitting(true);
+
+    if (validate()) {
+      console.log("Dados enviados: ", formData);
+      // Aqui você pode adicionar a lógica de envio para o servidor
+    } else {
+      setIsSubmitting(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#127ee4] to-blue-900 flex items-center justify-center p-4">
@@ -125,10 +190,17 @@ const ModernMultiStepForm = () => {
                       name="fullName"
                       value={formData.fullName}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition duration-200"
+                      className={`w-full px-4 py-3 rounded-lg border ${
+                        errors.fullName
+                          ? "border-red-500"
+                          : "border-gray-300 focus:border-blue-500"
+                      } focus:ring-2 focus:ring-blue-200 outline-none transition duration-200`}
                       placeholder="Seu nome completo"
                       required
                     />
+                    {errors.fullName && (
+                      <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>
+                    )}
                   </div>
 
                   <div className="space-y-1">
@@ -138,7 +210,6 @@ const ModernMultiStepForm = () => {
                     >
                       Telefone
                     </label>
-              
                     <IMaskInput
                       mask={[
                         {
@@ -155,10 +226,17 @@ const ModernMultiStepForm = () => {
                       onAccept={(value) =>
                         handleChange({ target: { name: "phoneNumber", value } })
                       }
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition duration-200"
+                      className={`w-full px-4 py-3 rounded-lg border ${
+                        errors.phoneNumber
+                          ? "border-red-500"
+                          : "border-gray-300 focus:border-blue-500"
+                      } focus:ring-2 focus:ring-blue-200 outline-none transition duration-200`}
                       placeholder="(00) 00000-0000"
                       required
                     />
+                    {errors.phoneNumber && (
+                      <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>
+                    )}
                   </div>
                 </div>
               )}
@@ -173,24 +251,25 @@ const ModernMultiStepForm = () => {
                       CEP
                     </label>
                     <IMaskInput
-                      mask={[
-                        {
-                          mask: "00000-000",
-                        },
-                      
-                      ]}
+                      mask="00000-000"
                       type="text"
                       id="cep"
                       name="address.cep"
                       value={formData.address.cep}
-                      onAccept={(value) => 
-                      handleChange({target: { name: "address.cep", value }})
-                        }
-
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition duration-200"
+                      onAccept={(value) =>
+                        handleChange({ target: { name: "address.cep", value } })
+                      }
+                      className={`w-full px-4 py-3 rounded-lg border ${
+                        errors["address.cep"]
+                          ? "border-red-500"
+                          : "border-gray-300 focus:border-blue-500"
+                      } focus:ring-2 focus:ring-blue-200 outline-none transition duration-200`}
                       placeholder="00000-000"
                       required
                     />
+                    {errors["address.cep"] && (
+                      <p className="text-red-500 text-xs mt-1">{errors["address.cep"]}</p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -207,10 +286,17 @@ const ModernMultiStepForm = () => {
                         name="address.street"
                         value={formData.address.street}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition duration-200"
+                        className={`w-full px-4 py-3 rounded-lg border ${
+                          errors["address.street"]
+                            ? "border-red-500"
+                            : "border-gray-300 focus:border-blue-500"
+                        } focus:ring-2 focus:ring-blue-200 outline-none transition duration-200`}
                         placeholder="Nome da rua"
                         required
                       />
+                      {errors["address.street"] && (
+                        <p className="text-red-500 text-xs mt-1">{errors["address.street"]}</p>
+                      )}
                     </div>
 
                     <div className="space-y-1">
@@ -226,10 +312,17 @@ const ModernMultiStepForm = () => {
                         name="address.number"
                         value={formData.address.number}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition duration-200"
+                        className={`w-full px-4 py-3 rounded-lg border ${
+                          errors["address.number"]
+                            ? "border-red-500"
+                            : "border-gray-300 focus:border-blue-500"
+                        } focus:ring-2 focus:ring-blue-200 outline-none transition duration-200`}
                         placeholder="Nº"
                         required
                       />
+                      {errors["address.number"] && (
+                        <p className="text-red-500 text-xs mt-1">{errors["address.number"]}</p>
+                      )}
                     </div>
                   </div>
 
@@ -264,10 +357,17 @@ const ModernMultiStepForm = () => {
                       name="address.city"
                       value={formData.address.city}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition duration-200"
+                      className={`w-full px-4 py-3 rounded-lg border ${
+                        errors["address.city"]
+                          ? "border-red-500"
+                          : "border-gray-300 focus:border-blue-500"
+                      } focus:ring-2 focus:ring-blue-200 outline-none transition duration-200`}
                       placeholder="Seu bairro"
                       required
                     />
+                    {errors["address.city"] && (
+                      <p className="text-red-500 text-xs mt-1">{errors["address.city"]}</p>
+                    )}
                   </div>
                 </div>
               )}
@@ -338,7 +438,7 @@ const ModernMultiStepForm = () => {
                   <button
                     type="button"
                     onClick={handlePrev}
-                    className="px-6 py-3 rounded-lg border  bg-[#34414d] text-white font-medium  transition duration-200 cursor-pointer hover:bg-[#34414d] hover:shadow-lg"
+                    className="px-6 py-3 rounded-lg border bg-[#34414d] text-white font-medium transition duration-200 cursor-pointer hover:bg-[#34414d] hover:shadow-lg"
                   >
                     Voltar
                   </button>
@@ -353,12 +453,17 @@ const ModernMultiStepForm = () => {
                     Continuar
                   </button>
                 ) : (
-                  <button
-                    type="submit"
-                    className="ml-auto px-6 py-3 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 transition duration-200 shadow-md hover:shadow-lg cursor-pointer "
-                  >
-                    Confirmar Cadastro
-                  </button>
+                  <Link to={"/construction"}>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className={`ml-auto px-6 py-3 rounded-lg ${
+                        isSubmitting ? "bg-green-400" : "bg-green-600"
+                      } text-white font-medium hover:bg-green-700 transition duration-200 shadow-md hover:shadow-lg cursor-pointer`}
+                    >
+                      {isSubmitting ? "Enviando..." : "Confirmar Cadastro"}
+                    </button>
+                  </Link>
                 )}
               </div>
             </form>
