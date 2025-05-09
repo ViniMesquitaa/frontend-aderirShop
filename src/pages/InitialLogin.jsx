@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { IMaskInput } from "react-imask";
 
 const ModernMultiStepForm = () => {
   const [step, setStep] = useState(1);
@@ -16,6 +17,7 @@ const ModernMultiStepForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     if (name.includes("address")) {
       const field = name.split(".")[1];
       setFormData((prev) => ({
@@ -38,37 +40,53 @@ const ModernMultiStepForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Dados enviados: ", formData);
- 
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#127ee4] to-blue-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Progress Steps */}
         <div className="flex justify-between mb-8 relative">
-          <div className="absolute top-1/2 left-0 right-0 h-1 bg-blue-200 transform -translate-y-1/2 -z-10"></div>
           <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+            className="absolute top-1/2 left-0 h-1 bg-[#fff] transform -translate-y-1/2 z-0 transition-all duration-500"
+            style={{
+              width:
+                step === 1
+                  ? "0%"
+                  : step === 2
+                  ? "50%"
+                  : step === 3
+                  ? "100%"
+                  : "0%",
+            }}
+          ></div>
+
+          {/* Etapa 1 */}
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold z-10 ${
               step >= 1
-                ? "bg-[#34414d] text-white"
+                ? "bg-[#FFA500] text-white"
                 : "bg-white text-blue-400 border-2 border-white"
             }`}
           >
             1
           </div>
+
+          {/* Etapa 2 */}
           <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+            className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold z-10 ${
               step >= 2
-                ? "bg-[#34414d] text-white"
+                ? "bg-[#FFA500] text-white"
                 : "bg-white text-blue-400 border-2 border-white"
             }`}
           >
             2
           </div>
+
+          {/* Etapa 3 */}
           <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+            className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold z-10 ${
               step === 3
-                ? "bg-[#34414d] text-white"
+                ? "bg-[#FFA500] text-white"
                 : "bg-white text-blue-400 border-2 border-white"
             }`}
           >
@@ -76,7 +94,6 @@ const ModernMultiStepForm = () => {
           </div>
         </div>
 
-        {/* Form Container */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="p-8">
             <div className="text-center mb-8">
@@ -93,7 +110,6 @@ const ModernMultiStepForm = () => {
             </div>
 
             <form onSubmit={handleSubmit}>
-              {/* Step 1 */}
               {step === 1 && (
                 <div className="space-y-6">
                   <div className="space-y-1">
@@ -122,12 +138,23 @@ const ModernMultiStepForm = () => {
                     >
                       Telefone
                     </label>
-                    <input
+              
+                    <IMaskInput
+                      mask={[
+                        {
+                          mask: "(00) 0000-0000",
+                        },
+                        {
+                          mask: "(00) 00000-0000",
+                        },
+                      ]}
                       type="tel"
                       id="phoneNumber"
                       name="phoneNumber"
                       value={formData.phoneNumber}
-                      onChange={handleChange}
+                      onAccept={(value) =>
+                        handleChange({ target: { name: "phoneNumber", value } })
+                      }
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition duration-200"
                       placeholder="(00) 00000-0000"
                       required
@@ -136,9 +163,8 @@ const ModernMultiStepForm = () => {
                 </div>
               )}
 
-              {/* Step 2 */}
               {step === 2 && (
-                <div className="space-y-6">
+                <div className="space-y-3">
                   <div className="space-y-1">
                     <label
                       htmlFor="cep"
@@ -146,12 +172,21 @@ const ModernMultiStepForm = () => {
                     >
                       CEP
                     </label>
-                    <input
+                    <IMaskInput
+                      mask={[
+                        {
+                          mask: "00000-000",
+                        },
+                      
+                      ]}
                       type="text"
                       id="cep"
                       name="address.cep"
                       value={formData.address.cep}
-                      onChange={handleChange}
+                      onAccept={(value) => 
+                      handleChange({target: { name: "address.cep", value }})
+                        }
+
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition duration-200"
                       placeholder="00000-000"
                       required
@@ -186,7 +221,7 @@ const ModernMultiStepForm = () => {
                         Número
                       </label>
                       <input
-                        type="text"
+                        type="number"
                         id="number"
                         name="address.number"
                         value={formData.address.number}
@@ -221,7 +256,7 @@ const ModernMultiStepForm = () => {
                       htmlFor="city"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Cidade
+                      Bairro
                     </label>
                     <input
                       type="text"
@@ -230,14 +265,13 @@ const ModernMultiStepForm = () => {
                       value={formData.address.city}
                       onChange={handleChange}
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition duration-200"
-                      placeholder="Sua cidade"
+                      placeholder="Seu bairro"
                       required
                     />
                   </div>
                 </div>
               )}
 
-              {/* Step 3 - Confirmation */}
               {step === 3 && (
                 <div className="space-y-6">
                   <div className="bg-blue-50 rounded-xl p-6">
@@ -299,13 +333,12 @@ const ModernMultiStepForm = () => {
                 </div>
               )}
 
-              {/* Navigation Buttons */}
               <div className="mt-8 flex justify-between">
                 {step > 1 && (
                   <button
                     type="button"
                     onClick={handlePrev}
-                    className="px-6 py-3 rounded-lg border border-blue-500 text-blue-600 font-medium hover:bg-blue-50 transition duration-200"
+                    className="px-6 py-3 rounded-lg border  bg-[#34414d] text-white font-medium  transition duration-200 cursor-pointer hover:bg-[#34414d] hover:shadow-lg"
                   >
                     Voltar
                   </button>
@@ -315,14 +348,14 @@ const ModernMultiStepForm = () => {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="ml-auto px-6 py-3 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition duration-200 shadow-md hover:shadow-lg"
+                    className="ml-auto px-6 py-3 rounded-lg bg-[#1e75e6] text-white font-medium hover:bg-blue-600 transition duration-200 shadow-md hover:shadow-lg cursor-pointer"
                   >
                     Continuar
                   </button>
                 ) : (
                   <button
                     type="submit"
-                    className="ml-auto px-6 py-3 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 transition duration-200 shadow-md hover:shadow-lg"
+                    className="ml-auto px-6 py-3 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 transition duration-200 shadow-md hover:shadow-lg cursor-pointer "
                   >
                     Confirmar Cadastro
                   </button>
