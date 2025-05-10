@@ -1,18 +1,20 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 import InitialLogin from "./pages/InitialLogin";
 import UnderConstruction from "./components/UnderConstruction";
-
+import Catalog from "./pages/Catalog";
+import Footer from "./components/Footer";
 
 function App() {
   return (
-    <Router>
+    <>
       <Routes>
         <Route path="/" element={<InitialLogin />} />
+        <Route path="/catalog" element={<Catalog />} />
         <Route path="/construction" element={<UnderConstruction />} />
       </Routes>
-    </Router>
+ 
+    </>
   );
 }
 
