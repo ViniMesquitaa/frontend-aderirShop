@@ -60,7 +60,6 @@ const ModernMultiStepForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Efeito para limpar erros quando os campos são alterados
   useEffect(() => {
     if (errors.fullName && formData.fullName.trim().length >= 3) {
       setErrors((prevErrors) => {
@@ -100,12 +99,10 @@ const ModernMultiStepForm = () => {
 
     if (validate()) {
       console.log("Dados enviados: ", formData);
-      // Aqui você pode adicionar a lógica de envio para o servidor
     } else {
       setIsSubmitting(false);
     }
   };
-
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#127ee4] to-blue-900 flex items-center justify-center p-4">
@@ -199,7 +196,9 @@ const ModernMultiStepForm = () => {
                       required
                     />
                     {errors.fullName && (
-                      <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.fullName}
+                      </p>
                     )}
                   </div>
 
@@ -235,7 +234,9 @@ const ModernMultiStepForm = () => {
                       required
                     />
                     {errors.phoneNumber && (
-                      <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.phoneNumber}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -268,7 +269,9 @@ const ModernMultiStepForm = () => {
                       required
                     />
                     {errors["address.cep"] && (
-                      <p className="text-red-500 text-xs mt-1">{errors["address.cep"]}</p>
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors["address.cep"]}
+                      </p>
                     )}
                   </div>
 
@@ -295,7 +298,9 @@ const ModernMultiStepForm = () => {
                         required
                       />
                       {errors["address.street"] && (
-                        <p className="text-red-500 text-xs mt-1">{errors["address.street"]}</p>
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors["address.street"]}
+                        </p>
                       )}
                     </div>
 
@@ -321,7 +326,9 @@ const ModernMultiStepForm = () => {
                         required
                       />
                       {errors["address.number"] && (
-                        <p className="text-red-500 text-xs mt-1">{errors["address.number"]}</p>
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors["address.number"]}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -366,7 +373,9 @@ const ModernMultiStepForm = () => {
                       required
                     />
                     {errors["address.city"] && (
-                      <p className="text-red-500 text-xs mt-1">{errors["address.city"]}</p>
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors["address.city"]}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -453,7 +462,7 @@ const ModernMultiStepForm = () => {
                     Continuar
                   </button>
                 ) : (
-                  <Link to={"/construction"}>
+                  <Link to={"/catalog"}>
                     <button
                       type="submit"
                       disabled={isSubmitting}
