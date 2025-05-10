@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { IMaskInput } from "react-imask";
-import { Link } from "react-router";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-const ModernMultiStepForm = () => {
+const InitialLogin = () => {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [showSucess, setShowSucess] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     phoneNumber: "",
@@ -18,7 +21,6 @@ const ModernMultiStepForm = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Validação do formulário
   const validate = () => {
     const newErrors = {};
 
@@ -62,12 +64,12 @@ const ModernMultiStepForm = () => {
 
   useEffect(() => {
     if (errors.fullName && formData.fullName.trim().length >= 3) {
-      setErrors((prevErrors) => {
-        const { fullName: _, ...rest } = prevErrors;
+      setErrors((prev) => {
+        const { fullName: _, ...rest } = prev;
         return rest;
       });
     }
-  }, [formData.fullName, errors]);
+  }, [formData.fullName, errors.fullName]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -85,20 +87,37 @@ const ModernMultiStepForm = () => {
 
   const handleNext = () => {
     if (validate()) {
-      setStep((prevStep) => prevStep + 1);
+      setStep((prev) => prev + 1);
     }
   };
 
   const handlePrev = () => {
-    setStep((prevStep) => prevStep - 1);
+    setStep((prev) => prev - 1);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     if (validate()) {
-      console.log("Dados enviados: ", formData);
+      try {
+        const response = await axios.post(
+          "http://localhost:8080/customer",
+          formData
+        );
+
+        if (response.status === 201) {
+          setShowSucess(true);
+          setTimeout(() => {
+            navigate("/catalog"); // redireciona após o cadastro
+          }, 2000);
+        }
+      } catch (error) {
+        console.error("Erro ao registrar o cliente", error);
+        alert("Erro ao realizar o cadastro. Tente novamente.");
+      } finally {
+        setIsSubmitting(false);
+      }
     } else {
       setIsSubmitting(false);
     }
@@ -107,55 +126,29 @@ const ModernMultiStepForm = () => {
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#127ee4] to-blue-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {/* Etapas */}
         <div className="flex justify-between mb-8 relative">
           <div
-            className="absolute top-1/2 left-0 h-1 bg-[#fff] transform -translate-y-1/2 z-0 transition-all duration-500"
+            className="absolute top-1/2 left-0 h-1 bg-white transform -translate-y-1/2 z-0 transition-all duration-500"
             style={{
-              width:
-                step === 1
-                  ? "0%"
-                  : step === 2
-                  ? "50%"
-                  : step === 3
-                  ? "100%"
-                  : "0%",
+              width: step === 1 ? "0%" : step === 2 ? "50%" : "100%",
             }}
           ></div>
-
-          {/* Etapa 1 */}
-          <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold z-10 ${
-              step >= 1
-                ? "bg-[#FFA500] text-white"
-                : "bg-white text-blue-400 border-2 border-white"
-            }`}
-          >
-            1
-          </div>
-
-          {/* Etapa 2 */}
-          <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold z-10 ${
-              step >= 2
-                ? "bg-[#FFA500] text-white"
-                : "bg-white text-blue-400 border-2 border-white"
-            }`}
-          >
-            2
-          </div>
-
-          {/* Etapa 3 */}
-          <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold z-10 ${
-              step === 3
-                ? "bg-[#FFA500] text-white"
-                : "bg-white text-blue-400 border-2 border-white"
-            }`}
-          >
-            ✓
-          </div>
+          {[1, 2, 3].map((n) => (
+            <div
+              key={n}
+              className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold z-10 ${
+                step >= n
+                  ? "bg-[#FFA500] text-white"
+                  : "bg-white text-blue-400 border-2 border-white"
+              }`}
+            >
+              {n === 3 ? "✓" : n}
+            </div>
+          ))}
         </div>
 
+        {/* Card */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="p-8">
             <div className="text-center mb-8">
@@ -177,50 +170,40 @@ const ModernMultiStepForm = () => {
                   <div className="space-y-1">
                     <label
                       htmlFor="fullName"
-                      className="block text-sm font-medium text-gray-700"
+                      className="text-sm font-medium text-gray-700"
                     >
                       Nome Completo
                     </label>
                     <input
                       type="text"
-                      id="fullName"
                       name="fullName"
+                      id="fullName"
                       value={formData.fullName}
                       onChange={handleChange}
                       className={`w-full px-4 py-3 rounded-lg border ${
-                        errors.fullName
-                          ? "border-red-500"
-                          : "border-gray-300 focus:border-blue-500"
-                      } focus:ring-2 focus:ring-blue-200 outline-none transition duration-200`}
+                        errors.fullName ? "border-red-500" : "border-gray-300"
+                      }`}
                       placeholder="Seu nome completo"
-                      required
                     />
                     {errors.fullName && (
-                      <p className="text-red-500 text-xs mt-1">
-                        {errors.fullName}
-                      </p>
+                      <p className="text-red-500 text-xs">{errors.fullName}</p>
                     )}
                   </div>
 
                   <div className="space-y-1">
                     <label
                       htmlFor="phoneNumber"
-                      className="block text-sm font-medium text-gray-700"
+                      className="text-sm font-medium text-gray-700"
                     >
                       Telefone
                     </label>
                     <IMaskInput
                       mask={[
-                        {
-                          mask: "(00) 0000-0000",
-                        },
-                        {
-                          mask: "(00) 00000-0000",
-                        },
+                        { mask: "(00) 0000-0000" },
+                        { mask: "(00) 00000-0000" },
                       ]}
-                      type="tel"
-                      id="phoneNumber"
                       name="phoneNumber"
+                      id="phoneNumber"
                       value={formData.phoneNumber}
                       onAccept={(value) =>
                         handleChange({ target: { name: "phoneNumber", value } })
@@ -228,13 +211,12 @@ const ModernMultiStepForm = () => {
                       className={`w-full px-4 py-3 rounded-lg border ${
                         errors.phoneNumber
                           ? "border-red-500"
-                          : "border-gray-300 focus:border-blue-500"
-                      } focus:ring-2 focus:ring-blue-200 outline-none transition duration-200`}
+                          : "border-gray-300"
+                      }`}
                       placeholder="(00) 00000-0000"
-                      required
                     />
                     {errors.phoneNumber && (
-                      <p className="text-red-500 text-xs mt-1">
+                      <p className="text-red-500 text-xs">
                         {errors.phoneNumber}
                       </p>
                     )}
@@ -243,18 +225,13 @@ const ModernMultiStepForm = () => {
               )}
 
               {step === 2 && (
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <label
-                      htmlFor="cep"
-                      className="block text-sm font-medium text-gray-700"
-                    >
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
                       CEP
                     </label>
                     <IMaskInput
                       mask="00000-000"
-                      type="text"
-                      id="cep"
                       name="address.cep"
                       value={formData.address.cep}
                       onAccept={(value) =>
@@ -263,117 +240,97 @@ const ModernMultiStepForm = () => {
                       className={`w-full px-4 py-3 rounded-lg border ${
                         errors["address.cep"]
                           ? "border-red-500"
-                          : "border-gray-300 focus:border-blue-500"
-                      } focus:ring-2 focus:ring-blue-200 outline-none transition duration-200`}
+                          : "border-gray-300"
+                      }`}
                       placeholder="00000-000"
-                      required
                     />
                     {errors["address.cep"] && (
-                      <p className="text-red-500 text-xs mt-1">
+                      <p className="text-red-500 text-xs">
                         {errors["address.cep"]}
                       </p>
                     )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label
-                        htmlFor="street"
-                        className="block text-sm font-medium text-gray-700"
-                      >
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
                         Rua
                       </label>
                       <input
                         type="text"
-                        id="street"
                         name="address.street"
                         value={formData.address.street}
                         onChange={handleChange}
                         className={`w-full px-4 py-3 rounded-lg border ${
                           errors["address.street"]
                             ? "border-red-500"
-                            : "border-gray-300 focus:border-blue-500"
-                        } focus:ring-2 focus:ring-blue-200 outline-none transition duration-200`}
+                            : "border-gray-300"
+                        }`}
                         placeholder="Nome da rua"
-                        required
                       />
                       {errors["address.street"] && (
-                        <p className="text-red-500 text-xs mt-1">
+                        <p className="text-red-500 text-xs">
                           {errors["address.street"]}
                         </p>
                       )}
                     </div>
 
-                    <div className="space-y-1">
-                      <label
-                        htmlFor="number"
-                        className="block text-sm font-medium text-gray-700"
-                      >
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
                         Número
                       </label>
                       <input
                         type="number"
-                        id="number"
                         name="address.number"
                         value={formData.address.number}
                         onChange={handleChange}
                         className={`w-full px-4 py-3 rounded-lg border ${
                           errors["address.number"]
                             ? "border-red-500"
-                            : "border-gray-300 focus:border-blue-500"
-                        } focus:ring-2 focus:ring-blue-200 outline-none transition duration-200`}
+                            : "border-gray-300"
+                        }`}
                         placeholder="Nº"
-                        required
                       />
                       {errors["address.number"] && (
-                        <p className="text-red-500 text-xs mt-1">
+                        <p className="text-red-500 text-xs">
                           {errors["address.number"]}
                         </p>
                       )}
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <label
-                      htmlFor="complement"
-                      className="block text-sm font-medium text-gray-700"
-                    >
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
                       Complemento
                     </label>
                     <input
                       type="text"
-                      id="complement"
                       name="address.complement"
                       value={formData.address.complement}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition duration-200"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300"
                       placeholder="Apto, bloco, etc. (opcional)"
                     />
                   </div>
 
-                  <div className="space-y-1">
-                    <label
-                      htmlFor="city"
-                      className="block text-sm font-medium text-gray-700"
-                    >
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
                       Bairro
                     </label>
                     <input
                       type="text"
-                      id="city"
                       name="address.city"
                       value={formData.address.city}
                       onChange={handleChange}
                       className={`w-full px-4 py-3 rounded-lg border ${
                         errors["address.city"]
                           ? "border-red-500"
-                          : "border-gray-300 focus:border-blue-500"
-                      } focus:ring-2 focus:ring-blue-200 outline-none transition duration-200`}
-                      placeholder="Seu bairro"
-                      required
+                          : "border-gray-300"
+                      }`}
+                      placeholder="Nome do bairro"
                     />
                     {errors["address.city"] && (
-                      <p className="text-red-500 text-xs mt-1">
+                      <p className="text-red-500 text-xs">
                         {errors["address.city"]}
                       </p>
                     )}
@@ -382,98 +339,75 @@ const ModernMultiStepForm = () => {
               )}
 
               {step === 3 && (
-                <div className="space-y-6">
-                  <div className="bg-blue-50 rounded-xl p-6">
-                    <h3 className="font-medium text-lg text-gray-800 mb-4">
-                      Resumo do Cadastro
-                    </h3>
-
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-sm text-gray-500">Nome</p>
-                        <p className="font-medium">{formData.fullName}</p>
-                      </div>
-
-                      <div>
-                        <p className="text-sm text-gray-500">Telefone</p>
-                        <p className="font-medium">{formData.phoneNumber}</p>
-                      </div>
-
-                      <div>
-                        <p className="text-sm text-gray-500">Endereço</p>
-                        <p className="font-medium">
-                          {formData.address.street}, {formData.address.number}
-                          {formData.address.complement &&
-                            `, ${formData.address.complement}`}
-                        </p>
-                        <p className="font-medium">
-                          {formData.address.city} - {formData.address.cep}
-                        </p>
-                      </div>
-                    </div>
+                <div className="text-left text-sm space-y-2 bg-[#ebe8e8d3] p-3 rounded-2xl shadow">
+                  <div>
+                    <strong>Nome:</strong> {formData.fullName}
                   </div>
-
-                  <div className="bg-green-50 border border-green-100 rounded-lg p-4 flex items-start">
-                    <div className="text-green-500 mr-3 mt-1">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-green-800">
-                        Tudo pronto!
-                      </h4>
-                      <p className="text-sm text-green-600">
-                        Confira seus dados e confirme o cadastro
-                      </p>
-                    </div>
+                  <div>
+                    <strong>Telefone:</strong> {formData.phoneNumber}
+                  </div>
+                  <div>
+                    <strong>CEP:</strong> {formData.address.cep}
+                  </div>
+                  <div>
+                    <strong>Rua:</strong> {formData.address.street}
+                  </div>
+                  <div>
+                    <strong>Número:</strong> {formData.address.number}
+                  </div>
+                  <div>
+                    <strong>Complemento:</strong>{" "}
+                    {formData.address.complement || "—"}
+                  </div>
+                  <div>
+                    <strong>Bairro:</strong> {formData.address.city}
                   </div>
                 </div>
               )}
 
-              <div className="mt-8 flex justify-between">
+              {/* Botões */}
+              <div className="mt-6 flex justify-between">
                 {step > 1 && (
                   <button
                     type="button"
                     onClick={handlePrev}
-                    className="px-6 py-3 rounded-lg border bg-[#34414d] text-white font-medium transition duration-200 cursor-pointer hover:bg-[#34414d] hover:shadow-lg"
+                    className="px-5 py-3 bg-gray-300 rounded-lg text-sm cursor-pointer hover:opacity-80 transition duration-200"
                   >
-                    Voltar
+                   <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.85355 3.14645C7.04882 3.34171 7.04882 3.65829 6.85355 3.85355L3.70711 7H12.5C12.7761 7 13 7.22386 13 7.5C13 7.77614 12.7761 8 12.5 8H3.70711L6.85355 11.1464C7.04882 11.3417 7.04882 11.6583 6.85355 11.8536C6.65829 12.0488 6.34171 12.0488 6.14645 11.8536L2.14645 7.85355C1.95118 7.65829 1.95118 7.34171 2.14645 7.14645L6.14645 3.14645C6.34171 2.95118 6.65829 2.95118 6.85355 3.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
                   </button>
                 )}
 
-                {step < 3 ? (
+                {step < 3 && (
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="ml-auto px-6 py-3 rounded-lg bg-[#1e75e6] text-white font-medium hover:bg-blue-600 transition duration-200 shadow-md hover:shadow-lg cursor-pointer"
-                  >
-                    Continuar
-                  </button>
-                ) : (
-                  <Link to={"/catalog"}>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className={`ml-auto px-6 py-3 rounded-lg ${
-                        isSubmitting ? "bg-green-400" : "bg-green-600"
-                      } text-white font-medium hover:bg-green-700 transition duration-200 shadow-md hover:shadow-lg cursor-pointer`}
+                    disabled={isSubmitting}
+                    className="px-5 py-3 bg-[#1972d8] text-white rounded-lg text-sm cursor-pointer hover:opacity-90 transition duration-200"
                     >
-                      {isSubmitting ? "Enviando..." : "Confirmar Cadastro"}
-                    </button>
-                  </Link>
+
+
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.14645 3.14645C8.34171 2.95118 8.65829 2.95118 8.85355 3.14645L12.8536 7.14645C13.0488 7.34171 13.0488 7.65829 12.8536 7.85355L8.85355 11.8536C8.65829 12.0488 8.34171 12.0488 8.14645 11.8536C7.95118 11.6583 7.95118 11.3417 8.14645 11.1464L11.2929 8H2.5C2.22386 8 2 7.77614 2 7.5C2 7.22386 2.22386 7 2.5 7H11.2929L8.14645 3.85355C7.95118 3.65829 7.95118 3.34171 8.14645 3.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+
+                  </button>
+               
+                
                 )}
+
+                {step === 3 && (
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm cursor-pointer"
+                  >
+                    {isSubmitting ? "Enviando..." : "Confirmar"}
+                  </button>
+                )}
+                {showSucess && (
+                  <div className="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg transition-opacity duration-500">
+                    ✅ Cadastro realizado com sucesso!
+                  </div>
+                )}
+
               </div>
             </form>
           </div>
@@ -483,4 +417,4 @@ const ModernMultiStepForm = () => {
   );
 };
 
-export default ModernMultiStepForm;
+export default InitialLogin;

@@ -13,8 +13,9 @@ const Main = () => {
   return (
     <>
       {hideHeaderAndFooter && <Header /> }
-      {hideHeaderAndFooter && <Footer /> }
+     
       <App />
+       {hideHeaderAndFooter && <Footer /> }
     </>
   );
 };
