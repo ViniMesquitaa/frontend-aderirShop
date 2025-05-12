@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { IMaskInput } from "react-imask";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import  RegisterCustomeApi from "../services/RegisterCustomerApi.js"; 
 
 const InitialLogin = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [showSucess, setShowSucess] = useState(false);
+
   const [formData, setFormData] = useState({
     fullName: "",
     phoneNumber: "",
@@ -95,38 +96,40 @@ const InitialLogin = () => {
     setStep((prev) => prev - 1);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+useEffect(() => {
+  const savedData = localStorage.getItem("customerData");
+  if (savedData) {
+    setFormData(JSON.parse(savedData));
+  }
+}, []);
 
-    if (validate()) {
-      try {
-        const response = await axios.post(
-          "http://localhost:8080/customer",
-          formData
-        );
 
-        if (response.status === 201) {
-          setShowSucess(true);
-          setTimeout(() => {
-            navigate("/catalog"); // redireciona após o cadastro
-          }, 2000);
-        }
-      } catch (error) {
-        console.error("Erro ao registrar o cliente", error);
-        alert("Erro ao realizar o cadastro. Tente novamente.");
-      } finally {
-        setIsSubmitting(false);
-      }
-    } else {
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+
+  if (validate()) {
+    try {
+
+      setShowSucess(true);
+         localStorage.setItem("customerData", JSON.stringify(formData));
+      setTimeout(() => {
+        navigate("/catalog");
+      }, 2000);
+    } catch (error) {
+      alert("Erro ao realizar o cadastro. Tente novamente.", error);
+    } finally {
       setIsSubmitting(false);
     }
-  };
+  } else {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#127ee4] to-blue-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Etapas */}
+
         <div className="flex justify-between mb-8 relative">
           <div
             className="absolute top-1/2 left-0 h-1 bg-white transform -translate-y-1/2 z-0 transition-all duration-500"
