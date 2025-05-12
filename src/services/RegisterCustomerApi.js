@@ -1,7 +1,7 @@
-import { Axios } from "axios";
+import axios from "axios";
 
-async function registerCustomer(data) {
-  return Axios.post("/customer", data)
+async function RegisterCustomer(data) {
+  return axios.post("http://localhost:8080/customer", data)
     .then((response) => {
       if (response.status === 201) {
         return response.data;
@@ -15,4 +15,4 @@ async function registerCustomer(data) {
     });
 }
 
-export default registerCustomer;
+export default RegisterCustomer;

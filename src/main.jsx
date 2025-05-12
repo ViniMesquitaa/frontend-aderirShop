@@ -8,17 +8,23 @@ import Footer from "./components/Footer.jsx";
 
 const Main = () => {
   const location = useLocation();
-  const hideHeaderAndFooter = location.pathname !== "/";
+
+  const hideHeaderRoutes = ["/"];
+
+  const hideFooterRoutes = ["/profile-user", "/"];
+
+  const showHeader = !hideHeaderRoutes.includes(location.pathname);
+  const showFooter = !hideFooterRoutes.includes(location.pathname);
 
   return (
     <>
-      {hideHeaderAndFooter && <Header /> }
-     
+      {showHeader && <Header />}
       <App />
-       {hideHeaderAndFooter && <Footer /> }
+      {showFooter && <Footer />}
     </>
   );
 };
+
 
 export default Main;
 
