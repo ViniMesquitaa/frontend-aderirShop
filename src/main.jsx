@@ -10,23 +10,19 @@ const Main = () => {
   const location = useLocation();
 
   const hideHeaderRoutes = ["/"];
-
-  const hideFooterRoutes = ["/profile-user", "/"];
+  const hideFooterRoutes = ["/profile-user", "/login", "/", "/register"];
 
   const showHeader = !hideHeaderRoutes.includes(location.pathname);
   const showFooter = !hideFooterRoutes.includes(location.pathname);
 
   return (
     <>
-      {showHeader && <Header />}
+      {showHeader && <Header cartVisible={false} />}
       <App />
       {showFooter && <Footer />}
     </>
   );
 };
-
-
-export default Main;
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -35,3 +31,5 @@ createRoot(document.getElementById("root")).render(
     </BrowserRouter>
   </StrictMode>
 );
+
+export default Main;

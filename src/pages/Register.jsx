@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { IMaskInput } from "react-imask";
 import { useNavigate } from "react-router-dom";
-import  RegisterCustomeApi from "../services/RegisterCustomerApi.js"; 
+import InputPasswordUI from "../components/InputPasswordUI";
 
 const InitialLogin = () => {
   const navigate = useNavigate();
@@ -18,6 +18,8 @@ const InitialLogin = () => {
       complement: "",
       city: "",
     },
+    username: "",
+    password: "",
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,6 +58,13 @@ const InitialLogin = () => {
 
       if (!formData.address.city.trim()) {
         newErrors["address.city"] = "Bairro é obrigatório";
+      }
+    } if(step === 3) {
+      if(!formData.username.trim()) {
+        newErrors["username"] = "Nome de Usuário é obrigatório"
+      }
+      if(!formData.password.trim()){
+        newErrors["password"] = "Senha é obrigatória"
       }
     }
 
@@ -96,74 +105,81 @@ const InitialLogin = () => {
     setStep((prev) => prev - 1);
   };
 
-useEffect(() => {
-  const savedData = localStorage.getItem("customerData");
-  if (savedData) {
-    setFormData(JSON.parse(savedData));
-  }
-}, []);
+  useEffect(() => {
+    const savedData = localStorage.getItem("customerData");
+    if (savedData) {
+      setFormData(JSON.parse(savedData));
+    }
+  
+  }, []);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsSubmitting(true);
-
-  if (validate()) {
-    try {
-
-      setShowSucess(true);
-         localStorage.setItem("customerData", JSON.stringify(formData));
-      setTimeout(() => {
-        navigate("/catalog");
-      }, 2000);
-    } catch (error) {
-      alert("Erro ao realizar o cadastro. Tente novamente.", error);
-    } finally {
+    if (validate()) {
+      try {
+        setShowSucess(true);
+        localStorage.setItem("customerData", JSON.stringify(formData));
+  
+        setTimeout(() => {
+          navigate("/catalog");
+        }, 2000);
+      } catch (error) {
+        alert("Erro ao realizar o cadastro. Tente novamente.", error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
       setIsSubmitting(false);
     }
-  } else {
-    setIsSubmitting(false);
-  }
-};
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-[#127ee4] to-blue-900 flex items-center justify-center p-4">
+    <div className="min-h-screen  bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-
         <div className="flex justify-between mb-8 relative">
           <div
             className="absolute top-1/2 left-0 h-1 bg-white transform -translate-y-1/2 z-0 transition-all duration-500"
             style={{
-              width: step === 1 ? "0%" : step === 2 ? "50%" : "100%",
+              width:
+                step === 1
+                  ? "0%"
+                  : step === 2
+                  ? "50%"
+                  : step === 3
+                  ? "75%"
+                  : "100%",
             }}
           ></div>
-          {[1, 2, 3].map((n) => (
+          {[1, 2, 3, 4].map((n) => (
             <div
               key={n}
               className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold z-10 ${
                 step >= n
-                  ? "bg-[#FFA500] text-white"
+                  ? "bg-[#115ccc] text-white"
                   : "bg-white text-blue-400 border-2 border-white"
               }`}
             >
-              {n === 3 ? "✓" : n}
+              {n === 4 ? "✓" : n}
             </div>
           ))}
         </div>
 
-        {/* Card */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="p-8">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-2">
                 {step === 1 && "Informações Pessoais"}
                 {step === 2 && "Endereço"}
-                {step === 3 && "Confirmação"}
+                {step === 3 && "Cadastro"}
+                {step === 4 && "Confirmação"}
               </h2>
               <p className="text-blue-500">
                 {step === 1 && "Preencha seus dados básicos"}
                 {step === 2 && "Informe onde você mora"}
-                {step === 3 && "Revise e confirme seu cadastro"}
+                {step === 3 && "Crie um usuário e uma senha"}
+                {step === 4 && "Revise e confirme seu cadastro"}
               </p>
             </div>
 
@@ -183,7 +199,7 @@ const handleSubmit = async (e) => {
                       id="fullName"
                       value={formData.fullName}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 rounded-lg border ${
+                      className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
                         errors.fullName ? "border-red-500" : "border-gray-300"
                       }`}
                       placeholder="Seu nome completo"
@@ -211,7 +227,7 @@ const handleSubmit = async (e) => {
                       onAccept={(value) =>
                         handleChange({ target: { name: "phoneNumber", value } })
                       }
-                      className={`w-full px-4 py-3 rounded-lg border ${
+                      className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
                         errors.phoneNumber
                           ? "border-red-500"
                           : "border-gray-300"
@@ -240,7 +256,7 @@ const handleSubmit = async (e) => {
                       onAccept={(value) =>
                         handleChange({ target: { name: "address.cep", value } })
                       }
-                      className={`w-full px-4 py-3 rounded-lg border ${
+                      className={`w-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all rounded-lg border ${
                         errors["address.cep"]
                           ? "border-red-500"
                           : "border-gray-300"
@@ -264,7 +280,7 @@ const handleSubmit = async (e) => {
                         name="address.street"
                         value={formData.address.street}
                         onChange={handleChange}
-                        className={`w-full px-4 py-3 rounded-lg border ${
+                        className={`w-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all rounded-lg border ${
                           errors["address.street"]
                             ? "border-red-500"
                             : "border-gray-300"
@@ -287,7 +303,7 @@ const handleSubmit = async (e) => {
                         name="address.number"
                         value={formData.address.number}
                         onChange={handleChange}
-                        className={`w-full px-4 py-3 rounded-lg border ${
+                        className={`w-full px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all py-3 rounded-lg border ${
                           errors["address.number"]
                             ? "border-red-500"
                             : "border-gray-300"
@@ -311,7 +327,7 @@ const handleSubmit = async (e) => {
                       name="address.complement"
                       value={formData.address.complement}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300"
+                      className="w-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all rounded-lg border border-gray-300"
                       placeholder="Apto, bloco, etc. (opcional)"
                     />
                   </div>
@@ -325,7 +341,7 @@ const handleSubmit = async (e) => {
                       name="address.city"
                       value={formData.address.city}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 rounded-lg border ${
+                      className={`w-full px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all py-3 rounded-lg border ${
                         errors["address.city"]
                           ? "border-red-500"
                           : "border-gray-300"
@@ -342,7 +358,45 @@ const handleSubmit = async (e) => {
               )}
 
               {step === 3 && (
+                <div className="space-y-6">
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-700">
+                      Nome de Usuário
+                    </label>
+                    <input
+                      type="text"
+                      name="username"
+                      value={formData.username}
+                      onChange={handleChange}
+                      className={`w-full px-4  focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all py-3 rounded-lg border border-gray-300`}
+                      placeholder="Seu nome de usuário"
+                    />
+                   {errors.username && (
+                      <p className="text-red-500 text-xs">
+                        {errors.username}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <InputPasswordUI label={"Senha"} placeholder={"Digite sua senha"} value={formData.password} onChange={handleChange}/>
+                     {errors.password && (
+                      <p className="text-red-500 text-xs">
+                        {errors.password}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <InputPasswordUI label={"Confirmar Senha"} placeholder={"Digite novamente sua senha"}/>
+                  </div>
+                </div>
+              )}
+
+              {step === 4 && (
                 <div className="text-left text-sm space-y-2 bg-[#ebe8e8d3] p-3 rounded-2xl shadow">
+                  <div>
+                    <strong>Nome de usuario:</strong> {formData.username}
+                  </div>
                   <div>
                     <strong>Nome:</strong> {formData.fullName}
                   </div>
@@ -368,7 +422,6 @@ const handleSubmit = async (e) => {
                 </div>
               )}
 
-              {/* Botões */}
               <div className="mt-6 flex justify-between">
                 {step > 1 && (
                   <button
@@ -376,27 +429,48 @@ const handleSubmit = async (e) => {
                     onClick={handlePrev}
                     className="px-5 py-3 bg-gray-300 rounded-lg text-sm cursor-pointer hover:opacity-80 transition duration-200"
                   >
-                   <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.85355 3.14645C7.04882 3.34171 7.04882 3.65829 6.85355 3.85355L3.70711 7H12.5C12.7761 7 13 7.22386 13 7.5C13 7.77614 12.7761 8 12.5 8H3.70711L6.85355 11.1464C7.04882 11.3417 7.04882 11.6583 6.85355 11.8536C6.65829 12.0488 6.34171 12.0488 6.14645 11.8536L2.14645 7.85355C1.95118 7.65829 1.95118 7.34171 2.14645 7.14645L6.14645 3.14645C6.34171 2.95118 6.65829 2.95118 6.85355 3.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 15 15"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M6.85355 3.14645C7.04882 3.34171 7.04882 3.65829 6.85355 3.85355L3.70711 7H12.5C12.7761 7 13 7.22386 13 7.5C13 7.77614 12.7761 8 12.5 8H3.70711L6.85355 11.1464C7.04882 11.3417 7.04882 11.6583 6.85355 11.8536C6.65829 12.0488 6.34171 12.0488 6.14645 11.8536L2.14645 7.85355C1.95118 7.65829 1.95118 7.34171 2.14645 7.14645L6.14645 3.14645C6.34171 2.95118 6.65829 2.95118 6.85355 3.14645Z"
+                        fill="currentColor"
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                      ></path>
+                    </svg>
                   </button>
                 )}
 
-                {step < 3 && (
+                {step < 4 && (
                   <button
                     type="button"
                     onClick={handleNext}
                     disabled={isSubmitting}
                     className="px-5 py-3 bg-[#1972d8] text-white rounded-lg text-sm cursor-pointer hover:opacity-90 transition duration-200"
+                  >
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 15 15"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
                     >
-
-
-                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.14645 3.14645C8.34171 2.95118 8.65829 2.95118 8.85355 3.14645L12.8536 7.14645C13.0488 7.34171 13.0488 7.65829 12.8536 7.85355L8.85355 11.8536C8.65829 12.0488 8.34171 12.0488 8.14645 11.8536C7.95118 11.6583 7.95118 11.3417 8.14645 11.1464L11.2929 8H2.5C2.22386 8 2 7.77614 2 7.5C2 7.22386 2.22386 7 2.5 7H11.2929L8.14645 3.85355C7.95118 3.65829 7.95118 3.34171 8.14645 3.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
-
+                      <path
+                        d="M8.14645 3.14645C8.34171 2.95118 8.65829 2.95118 8.85355 3.14645L12.8536 7.14645C13.0488 7.34171 13.0488 7.65829 12.8536 7.85355L8.85355 11.8536C8.65829 12.0488 8.34171 12.0488 8.14645 11.8536C7.95118 11.6583 7.95118 11.3417 8.14645 11.1464L11.2929 8H2.5C2.22386 8 2 7.77614 2 7.5C2 7.22386 2.22386 7 2.5 7H11.2929L8.14645 3.85355C7.95118 3.65829 7.95118 3.34171 8.14645 3.14645Z"
+                        fill="currentColor"
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                      ></path>
+                    </svg>
                   </button>
-               
-                
                 )}
 
-                {step === 3 && (
+                {step === 4 && (
                   <button
                     type="submit"
                     disabled={isSubmitting}
@@ -410,7 +484,6 @@ const handleSubmit = async (e) => {
                     ✅ Cadastro realizado com sucesso!
                   </div>
                 )}
-
               </div>
             </form>
           </div>

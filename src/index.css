@@ -4,9 +4,8 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  background-color: #f0f0f0;
+  background-color: white;
   margin: 0 auto;
-  font-family: Lato, sans-serif;
- 
- 
+  max-width: 2560px;
+  font-family: Poppins;
 }
