@@ -10,7 +10,7 @@ const Main = () => {
   const location = useLocation();
 
   const hideHeaderRoutes = ["/"];
-  const hideFooterRoutes = ["/profile-user", "/login", "/", "/register"];
+  const hideFooterRoutes = ["/profile-user", "/login", "/", "/register", "/order-tracking", "/checkout"];
 
   const showHeader = !hideHeaderRoutes.includes(location.pathname);
   const showFooter = !hideFooterRoutes.includes(location.pathname);
