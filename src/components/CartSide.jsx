@@ -1,5 +1,6 @@
 import { FiX, FiShoppingBag, FiPlus, FiMinus, FiTrash2 } from "react-icons/fi";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const CART_KEY = 'mw_sabao_cart';
 
@@ -180,7 +181,9 @@ const CartSide = ({
                   </svg>
                   Frete Grátis
                 </p>
+             
                 <div className="mt-4">
+                  <Link to="/checkout">
                   <button className="w-full bg-gradient-to-r from-[#0d5f8f] to-[#05122e] hover:opacity-90 text-white py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center font-medium cursor-pointer">
                     Finalizar compra
                     <svg
@@ -198,6 +201,7 @@ const CartSide = ({
                       />
                     </svg>
                   </button>
+                  </Link>
                 </div>
                 <div className="mt-4 text-center">
                   <button
